@@ -1,0 +1,12 @@
+# Ignore compiled binaries:
+# First, ignore everything
+*
+
+# Then unignore directories
+!*/
+
+# Then unignore anything with a file extension
+!*.*
+
+# Then unignore Makefile
+!Makefile
