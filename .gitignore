@@ -10,3 +10,5 @@
 
 # Then unignore Makefile
 !Makefile
+
+.vscode/
