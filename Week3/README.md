@@ -816,7 +816,7 @@ Decimal | Binary | Hexadecimal
  $$
     \mathtt{0100 0110 1010 0010 1011 1001 0011 1101} \\
     = \mathtt{0100\ 0110\ 1010\ 0010\ 1011\ 1001\ 0011\ 1101} \\
-    = \mathtt{0x\ 4\ 6\ A\ 2\ B\ 9\ 3\ D}
+    = \mathtt{0x\ 4 \ 6\ A\ 2\ B\ 9\ 3\ D}
  $$
 
  We use hexadecimal in computer science not for math, but because memory
