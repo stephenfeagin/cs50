@@ -824,7 +824,170 @@ Decimal | Binary | Hexadecimal
 
 ## File Pointers
 
+We can work with files in C through the use of file pointers (`FILE*`), which allow us to interact
+with persistent data stores on disk. Persistent data refers to information stored outside of the
+runtime of an application, on disk rather than in memory. File manipulation functions all live in
+`stdio.h`. All of them accept `FILE*` as one of their paramters, except for the function `fopen()`
+which is used to get the file pointer we want to work with.
 
+Common file IO functions:
+
+- `fopen()`
+- `fclose()`
+- `fgetc()`
+- `fputc()`
+- `fread()`
+- `fwrite()`
+
+### `fopen()`
+
+`fopen()` opens a file and returns a pointer to it. When using `fopen()`, you should always check
+the return value to make sure we didn't get back `NULL`.
+
+Usage: `FILE* ptr = fopen(<filename>, <operation>);`
+
+The operations we can use are `"r"` for "read," `"w"` for "write," and `"a"` for "append," which
+retains the file contents and adds new content only to the end.
+
+Example: `FILE* ptr1 = fopen("file1.txt", "r");`
+
+### `fopen()`
+
+Closes the file, which prevents us from using the `FILE*` without re-opening the file.
+
+Usage: `fclose(ptr);`
+
+### `fgetc()`
+
+`fgetc()` reads from the file and returns the next character from that file. The operation of the
+file pointer must have been `"r"` when using `fopen()` to obtain the file pointer. Otherwise, you
+will get an error.
+
+Usage: `char ch = fgetc(ptr);`
+
+At this point, we can already read a file and print it to the screen:
+
+```c
+#include <stdio.h>
+
+void cat(FILE* ptr)
+{
+    char ch;
+    while ((ch = fgetc(ptr)) != EOF)
+    {
+        printf("%c", ch);
+    }
+}
+```
+
+We could put this into a file called `cat.c` which is pretty much what the `cat` function does.
+
+Looking at the second line, we are assigning the result of `fgetc(ptr)` to `ch`, and then using that
+same value to compare to `EOF`, the end-of-file marker.
+
+### `fputc()`
+
+`fputc()` is the write-counterpart to `fgetc()` -- it writes a single character to the file. The
+operation used to open the file pointer must have been `"w"` or `"a"`.
+
+Usage: `fputc(<char>, <file pointer>);`
+
+Example: `fputc('A', ptr1);`
+
+Now that we can both read and write, we can implement a copy command like `cp`:
+
+```c
+#include <stdio.h>
+
+void cp(FILE* ptr1, FILE* ptr2)
+{
+    char ch;
+    while ((ch = fgetc(ptr1)) != EOF)
+    {
+        fputc(ch, ptr2);
+    }
+}
+```
+
+### `fread()`
+
+`fread()` reads `<qty>` units of size `<size>` from the file pointed to, and stores them in memory
+in a buffer (usually an array) that is pointed to by `<buffer>` (this pointer is NOT the file
+pointer, it is a regular pointer value like a `char*`). The operation of the file pointer must be
+`"r"`. `fread()` is the general version of `fgetc()` that can read an arbitrary amount of data.
+
+Usage: `fread(<buffer>, <size>, <qty>, <file pointer>)`
+
+Example:
+
+```c
+int arr[10];
+fread(arr, sizeof(int), 10, ptr);
+```
+
+It's important to remember in this example that when declaring an array in C, we're actually getting
+back a pointer to the first element in the array, even if there is no `*` in the declaration. So
+`int arr[10];` assigns to `arr` the value of a pointer that points to the first byte of 10 int-sized
+chunks of memory that we have allocated for ourselves. Using `int arr[10];` allocates the buffer on
+the stack, but we could also dynamically allocate the buffer using `malloc()`:
+
+```c
+double* arr2 = malloc(sizeof(double) * 80);
+fread(arr2, sizeof(double), 80, ptr);
+```
+
+This would save the data on the heap, rather than the stack.
+
+We could also treat `fread()` like a call to `fgetc()`:
+
+```c
+char c;
+fread(&c, sizeof(char), 1, ptr);
+```
+
+Using it this way, we need to make sure that we're passing in the **address of the variable**.
+
+### `fwrite()`
+
+Counterpart to `fread()`: writes `<qty>` units of size `<size>` to the file pointed to by reading
+them from a buffer (usually an array) pointed to by `<buffer>`. The operation of the file pointer
+must be either `"w"` or `"a"`.
+
+Usage: `fwrite(<buffer>, <size>, <qty>, <file pointer>);`
+
+Example: 
+
+```c
+int arr[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+fwrite(arr, sizeof(int), 10, ptr);
+```
+
+In this case, we're pulling information from `arr` and writing it to the file -- the reverse of
+`fread()`.
+
+We can similarly use dynamically allocated memory:
+
+```c
+double* arr2 = malloc(sizeof(double) * 80);
+fwrite(arr2, sizeof(double), 80, ptr);
+```
+
+Or treat it like `fputc()`:
+
+```c
+char c;
+fwrite(&c, sizeof(char), 1, ptr);
+```
+
+### Other useful file functions
+
+- `fgets()` reads a full string from a file
+- `fputs()` writes a full string to a file
+- `fprintf()` allows you to write a formatted string to a file (like `printf()`)
+- `fseek()` lets you rewind or fast-forward within a file
+- `ftell()` tells you at what position (byte) you are at within a file
+- `feof()` tells you whether you've read to the end of a file
+- `ferror()` tells you whether an error has occurred while working with a file
 
 ## Call Stacks
 
