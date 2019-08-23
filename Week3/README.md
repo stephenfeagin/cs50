@@ -1014,7 +1014,180 @@ frames, pausing, then continuing work once the active frame is popped.
 
 ## Pointers
 
+Pointers give us a different way to pass data between functions. Previously, we have been passing
+data **by value** -- when we pass data by value, we're only passing a copy of that data. We're not
+passing the memory chunk containing the integer `1`, we're passing the value of `1`, represented as
+`0b0001`, that will get put into a new chunk of memory and used totally separately from our original
+integer value.
 
+If we use pointer instead, we are able to pass the actual variable itself, not just a copy of the
+data that the variable holds. This means that a change that is made in one function could
+potentially change what happens in a different function.
+
+### Memory
+
+Let's take a step back and review how computer memory works. Every file is stored on some sort of a
+disk drive that allows them to persist even after we turn the computer off. But disk drives are just
+storage space, they can't be used for manipulating data. That only happens in RAM (random access
+memory). So most programs operate in RAM, sometimes pulling data from a file on disk and/or writing
+data back to a file.
+
+Memory is essentially just an enormous array of 8-bit wide bytes. We say enormous, but it's usually
+much smaller than the disk drive. However, RAM is ephemeral -- anything stored in RAM is destroyed
+when we shut down or restart the computer.
+
+Every piece of data takes up a certain amount of space in RAM. That amount of space is determined by
+the data's type (which can differ across programming languages and CPU architecture).
+
+Data Type | Size (bytes)
+----------|-------------
+`int` | 4
+`char` | 1
+`float` | 4
+`double` | 8
+`long long` | 8
+`string` | ?
+
+Once again, we can think of memory as a big array of byte-sized cells. Arrays are not only useful for
+storage of information, but also for **random access**. Remember that we can access individual 
+elements of an array by indicating which index location we want -- we can access any arbitrary 
+element that we may be interested in, we don't have to take the whole array as one piece, nor do we
+have to go in order, one at a time, from the beginning of the array. Similarly, with memory, we can
+access any address to get the element that we want. We don't have to go in order from the beginning.
+
+### Back to Pointers
+
+The most important thing to remember: **pointers are just memory addresses**. Pointers are addresses
+to locations in memory where variables live. 
+
+Let's say we want to store the integer `5` in a variable called `k`. There are a couple steps we 
+have to take:
+
+#### Step 1
+
+```c
+int k;
+```
+
+This is creating a box that can hold an integer, and writing `k` on the side. The only things that
+can go into the box are integers, and we're calling the box `k`.
+
+#### Step 2
+
+```c
+k = 5;
+```
+
+We're not actually changing the box `k`, we're putting the integer `5` inside the box. But now we
+have an integer-sized box called `k`, and inside of it is `5`.
+
+#### Step 3
+
+What if we say:
+
+```c
+int* pk;
+```
+
+This also creates a box, and it clearly has something to do with integers, but it's definitely not
+the same as `int k;`. 
+
+#### Step 4
+
+```c
+pk = &k;
+```
+
+What just happened? We didn't put the box `k` inside of `pk`. We didn't put the integer `5` inside
+of `pk`. Instead, we put the **address of `k`** into `pk`. It turns out that in step 3, we created
+a box that can hold the **address of an integer**. `k` remains unchanged, but inside of `pk` is now
+a memory address, something like `0x80C74820`.
+
+### What actually is a pointer?
+
+A pointer is a data item whose *value* is a memory address, and whose *type* describes the data
+located at that memory address. Pointers thus allow data structures or variables to be shared
+among functions.
+
+### Working with Pointers in C
+
+The simplest pointer in C is the `NULL` pointer. It points to nothing, by definition. When you
+create a pointer and don't set its value immediately, you should **always** set its value to `NULL`.
+You can check whether a pointer is `NULL` with simple equality (`ptr == NULL`).
+
+You can also create a pointer by extracting the address of a variable that you've already created.
+We can do this with the `&` operator. If `x` is of type `int`, then `&x` is a pointer-to-`int` whose
+value is the address of `x`. If `arr` is an array of `double`s, then `arr[i]` is a pointer-to-`double`
+whose value is the address of the `i`th element in `arr`. An array's name is actually just a pointer
+to its first element.
+
+The main purpose of a pointer is to allow us to modify or inspect the location to which it points.
+We can directly deal with the variable itself, rather than just a copy of its value. This is done by
+**dereferencing** the pointer -- the pointer is a reference, and the value at the address it points
+to is the dereferenced pointer. If we have a pointer-to-`char`, called `pc`, then `*pc` is the data
+that lives at the emmeory address stored inside the variable `pc`. Used in this context, `*` is
+known as the **dereference operator**. It "goes to the reference," accessing the data at that
+memory location, which allows you to manipulate it. The pointer gives you the address, and the
+dereferencing operator *takes you* to that address.
+
+If we try to dereference a pointer whose value is `NULL`, you'll get a segmentation fault. This
+segmentation fault is actually a useful behavior, because it defends against accidentally
+manipulating memory that you shouldn't be accessing. This is why we set uninitialized pointers to
+`NULL`, so that if we do try to dereference them, we get an error rather than changing some data that
+we really shouldn't be touching. This is because uninitialized variables actually do get assigned
+slots in memory. For an `int`, for example, it may just be `0` or some other random integer value.
+But for `int*`, it would be some random memory address, and the data at that address may be used by
+some other program and is thus NOT safe to touch.
+
+### Pointer Syntax in C
+
+```c
+int* p;
+```
+
+The value of `p` is an address. We can dereference `p` with the `*` operator. If we do that, we will
+find an `int` at that memory address.
+
+For most data types, we can declare multiple variables of the same type on the same line:
+
+```c
+int x, y, z;
+```
+
+But for pointers, the `*` is important for both the type name **and** the variable name.
+
+In contrast, if we do:
+
+```c
+int* px, py, py;
+```
+
+we will get a pointer-to-`int` called `px`, and then two `int`s called `py` and `pz`. Instead, if
+you want to create multiple pointers of the same type on the same line, you would need something
+like:
+
+```c
+int* pa, *pb, *pc;
+```
+
+But for clarity, you may just want to declare them on different lines.
+
+Back to our earlier example:
+
+```c
+int k = 5;
+int* pk = &k;
+```
+
+What happens if we then run:
+
+```c
+*pk = 35;
+```
+
+In this context, `*` is the dereference operator, getting the value stored at the address that `pk`
+points to. So after running `*pk = 35;`, it would then be true that `k == 35`, because we have
+changed the value of the variable stored where `pk` points to.
 
 ## Dynamic Memory Allocation
 
