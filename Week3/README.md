@@ -1191,4 +1191,87 @@ changed the value of the variable stored where `pk` points to.
 
 ## Dynamic Memory Allocation
 
+Previously, we've worked with pointers as a way to point to another variable hat already exists in
+our program. This means that we don't really need to worry about how much memory the pointer needs,
+because the memory that it points to is already dealt with by another variable with an explicitly
+declared type/value. It's all figured out ahead of time, when the program is compiled. But what if
+you don't know how much memory we'll need at compile time? What if the amount of memory that will be
+needed is determined at runtime, rather than compile time?
 
+We can get access to **dynamically-allocated memory** at runtime from a pool of memory called the
+**heap**. Prior to now, all of the memory that we've been working with has been allocated from the
+**stack**, which deals with the memory for function frames. Statically-allocated memory, like memory
+that you've given a name to at compile time, comes from the stack.
+
+But the stack and the heap are actually the same pool of memory, they just fill up from opposite
+ends. Memory addresses on the stack have lower numbers, and memory addresses on the heap have higher
+numbers. 
+
+We can access heap memory by using `malloc()`, which comes from `stdlib.h`. `malloc()` takes as its
+parameter the number of bytes that you want. After obtaining the memory, `malloc()` will return a
+pointer to that memory. If `malloc()` cannot give you the memory that you asked for, it will return
+`NULL`. So you should **always** check for `NULL` after using `malloc()` to deal with the possibility
+of a `NULL` pointer. 
+
+If we want to statically obtain an integer, we can just declare it:
+
+```c
+int x;
+```
+
+This memory will be allocated on the stack.
+
+If instead we wanted to dynamically obtain an integer, we would use:
+
+```c
+int *px = malloc(4);  // or malloc(sizeof(int))
+```
+
+This will then take a contiguous chunk of memory from the heap of the size that you requested, and
+return a pointer to it.
+
+If you wanted to get an integer from a user, you could do:
+
+```c
+int x;
+scanf("%i", &x);
+```
+
+Then, we want to allocate an array of `x` floats **on the stack**:
+
+```c
+float stack_array[x];
+```
+
+This is legal in C99 and C11, but not earlier versions.
+
+Or we could dynamically allocate an array of `x` floats **on the heap**:
+
+```c
+float* heap_array = malloc(x * sizeof(float));
+```
+
+There is one issue with dynamically allcoated memory (memory on the heap): it is not automatically
+released back to the system when the function is done. That memory is still in use, even after the
+function exits, unless you manually release it. If you fail to return memory back to the system when
+you're done, it will cause a **memory leak** which can compromise system performance. So when you
+finish working with dynamically-allocated memory, you must `free()` it, passing in the pointer to
+the memory that you wish to release.
+
+Example:
+
+```c
+// allocate memory from the stack
+char* word = malloc(50 * sizeof(char));
+
+// do some stuff
+
+// release the memory block
+free(word);
+```
+
+### Three Rules for Dynamic Memory Allocation
+
+1. Every block of memory that you `malloc()`, you must then `free()`
+2. Only memory that you `malloc()` should be `free()`d
+3. Do not `free()` any block of memory more than once
