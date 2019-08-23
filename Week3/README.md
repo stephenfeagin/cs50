@@ -991,7 +991,26 @@ fwrite(&c, sizeof(char), 1, ptr);
 
 ## Call Stacks
 
+When you call a function, the system allocates some space in memory just for that function to use.
+These chunks of memory are often referred to as *stack frames* or *function frames*. More than one
+function's stack frame may exist in memory at a time. For example, `main()` may call another
+function, `move()`, which in turn calls `direction()`, so we have three open frames. But in general,
+only one of those frames will be active at any given time -- they are all open, they all have space
+set aside, but only one function is operating at a time.
 
+Function frames are arranged in a *stack*. The frame of the most recently called function is always
+on the top of the stack. When a new function is called, a new frame is *pushed* onto the top of the
+stack and becomes the active frame.
+
+When a function finishes its work and returns, its frame is *popped* off of the stack, and the frame
+just below it becomes the active frame, now on the top of the stack. This function picks up its work
+immediately where it left off when it called the function that had been on top.
+
+This process of pushing and popping frames is why recursion works. Only one of the frames is actually
+doing work at any given time, the rest are just sort of paused. So when a function calls itself, the
+"parent" function stops its operation, and the new child function begins work. It will return a value
+or maybe call another function (maybe itself again), and just continue the process of pushing new
+frames, pausing, then continuing work once the active frame is popped.
 
 ## Pointers
 
